@@ -1,3 +1,6 @@
 /obj/
 /bin/
+/.token.json/
 *.json
+thinking scratchpad.txt
+

@@ -1,31 +1,40 @@
 ﻿using System;
 using System.Text.Json;
 using google;
+using CalendarQuickstart;
+
 namespace test1
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            string jsonstr = System.IO.File.ReadAllText("testdata.json");  
-            var user = JsonSerializer.Deserialize<TestJson>(jsonstr);
-
+            Console.WriteLine("Google Timelines -> Calendar Loader");
+            
             string locations = System.IO.File.ReadAllText("2021_MAY.json");  
             var timelineContainer = JsonSerializer.Deserialize<TimelineContainer>(locations);
+            
+            var gc = new GCalendar("c_iksc4fa2mjhmautqv1k3lsb2ls@group.calendar.google.com");
+            gc.Initialize();
 
-            //prints the entire log directly from the locsobject
-            /*foreach(TimelineObject tlo in locs.timelineObjects){
-                System.Console.WriteLine(tlo);
-            }*/
-
-            //uses a parser which has a memory to detect change of days
-            //and missing data
             var tlp = new TimeLineParser(timelineContainer);
-            while(tlp.hasNext){
-                System.Console.WriteLine(tlp.GetNext());
-                System.Console.WriteLine("- - - - - - - - - - - - - -");
-            }
+            ClassifiedEvent ce;
+            do{
+                ce = tlp.GetNextClassifiedEvent();
+                if (ce is not null){
+                    var nextEvent = new GCalEvent(ce);
+                    gc.InsertEvent(nextEvent);
+                    System.Console.WriteLine("- - - - - - - - - - - - - -");
+                }
+            } while(ce is not null);
+
+
+            Console.WriteLine("End of program");
+        }
+
+        public void testJson(){
+            string jsonstr = System.IO.File.ReadAllText("testdata.json");  
+            var user = JsonSerializer.Deserialize<TestJson>(jsonstr);
 
             //json test parsing on test data. only debug/try stuff out.
             using (JsonDocument document = JsonDocument.Parse(jsonstr))
@@ -36,8 +45,6 @@ namespace test1
                     System.Console.WriteLine($"one:{one},two:{two}");
                 }
             }
-
-            Console.WriteLine("End step");
         }
     }
 }

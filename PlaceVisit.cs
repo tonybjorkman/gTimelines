@@ -7,9 +7,12 @@ namespace google{
 
     public interface ITimelineObject
     {
-        public DateTime GetDate();
+        public DateTime GetStartDate();
+        public DateTime GetEndDate();
 
         public Boolean isSameDay(DateTime date);
+
+        public Boolean isPlace();
     }
     public class SourceInfo
     {
@@ -37,6 +40,11 @@ namespace google{
         public DateTime GetDate(){
             return DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(startTimestampMs)).ToLocalTime().DateTime;
         }
+
+        public DateTime GetEndDate(){
+            return DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(endTimestampMs)).ToLocalTime().DateTime;
+        }
+
         private string startTimeStampString(){
             return DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(startTimestampMs)).ToLocalTime().ToString();
         }
@@ -115,9 +123,18 @@ namespace google{
             return (date.Date == duration.GetDate().Date);
         }
 
-        public DateTime GetDate(){
+        public Boolean isPlace(){
+            return false;
+        }
+
+        public DateTime GetStartDate(){
             return duration.GetDate();
         }
+
+        public DateTime GetEndDate(){
+            return duration.GetEndDate();
+        }
+
         public StartLocation startLocation { get; set; }
         public EndLocation endLocation { get; set; }
         public Duration duration { get; set; }
@@ -149,8 +166,29 @@ namespace google{
             return (date.Date == duration.GetDate().Date);
         }
 
-        public DateTime GetDate(){
+
+        public Boolean isPlace(){
+            return true;
+        }
+
+        public DateTime GetStartDate(){
             return duration.GetDate();
+        }
+
+        public DateTime GetEndDate(){
+            return duration.GetEndDate();
+        }
+
+        public string GetName(){
+            return location.name;
+        }
+
+        public string GetAddress(){
+            return location.address;
+        }
+
+        public string GetDescription(){
+            return location.ToString();
         }
 
         public Location location { get; set; }

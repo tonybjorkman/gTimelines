@@ -10,6 +10,7 @@ namespace test1
         static void Main(string[] args)
         {
             Console.WriteLine("Google Timelines -> Calendar Loader");
+            GeoFencingService.Test();
             
             string locations = System.IO.File.ReadAllText("2021_MAY.json");  
             var timelineContainer = JsonSerializer.Deserialize<TimelineContainer>(locations);

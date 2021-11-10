@@ -9,6 +9,7 @@
     <PackageReference Include="Google.Apis.Calendar.v3" Version="1.52.0.2382" />
     <PackageReference Include="NPOI" Version="2.5.3" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
   </ItemGroup>
 
 </Project>

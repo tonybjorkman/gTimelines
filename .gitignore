@@ -2,5 +2,10 @@
 /bin/
 /.token.json/
 *.json
+*.swp
+*.code-workspace
 thinking scratchpad.txt
-
+.idea/
+chromedriver
+practice.cs
+~/

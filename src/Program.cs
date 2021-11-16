@@ -22,15 +22,16 @@ namespace test1
         }
 
         public void DownloadGeoHistory(){
-            StartGeoHistoryExport(this.exportUrl);
-            var ready = WaitForUrl(this.downloadUrl);
+            PreparePageForGeoHistoryExport(this.exportUrl);
+            ExecuteGeoHistoryExportOnPreparedPage();
+            var ready = Browser.WaitForUrl(this.downloadUrl,600);
             if (ready){
                 GetTakeoutDownloadLink(this.downloadUrl);
                 System.Console.WriteLine("Takeout downloaded");
             }
         }
 
-        private void StartGeoHistoryExport(string url)
+        private void PreparePageForGeoHistoryExport(string url)
         {
             //Navigate to DotNet website
             try{
@@ -42,11 +43,25 @@ namespace test1
                 Thread.Sleep(3000);
                 Browser.GetChrome().FindElement(By.XPath("//span[contains(text(),'Nästa steg')]")).Click();
                 Thread.Sleep(3000);
-                Browser.GetChrome().FindElement(By.XPath("//span[contains(text(),'Skapa export')]")).Click();
+
             } catch (NoSuchElementException e){
                 new Exception("Could not find element. Page not loaded?",e);       
             }
         }
+
+        private void ExecuteGeoHistoryExportOnPreparedPage(){
+            try{
+                Browser.GetChrome().FindElement(By.XPath("//span[contains(text(),'Skapa export')]")).Click();
+                //verify that the export has started.
+                if (!Browser.WaitForElement(By.XPath("//div[contains(text(),'Filerna förbereds')]"),20)){
+                    throw new NoSuchElementException();                      
+                }
+
+            } catch (NoSuchElementException e){
+                new Exception("Could not find element. Page not loaded?",e);       
+            }
+        }
+
         private String GetTakeoutDownloadLink(String downloadPageUrl){
             if(Browser.GetChrome().Url != downloadPageUrl){
                 throw new Exception("Unexpected Url. First navigate to the correct url.");
@@ -57,8 +72,50 @@ namespace test1
             return downloadLink;
         }
 
-        private Boolean WaitForUrl(String url){
-                WebDriverWait w = new WebDriverWait(Browser.GetChrome(),new TimeSpan(0, 10, 30));
+        
+    }
+    public class Browser{
+        private static ChromeDriver chromeDriver;
+        private ChromeDriver driver;
+
+        public Browser(){
+           this.driver = new ChromeDriver(".",this.CreateChromeOptions()); 
+        }
+
+        public static ChromeDriver GetChrome(){
+            return chromeDriver?? (chromeDriver = new Browser().driver);
+        }
+        private ChromeOptions CreateChromeOptions(){
+            var options = new ChromeOptions();
+            options.AddArgument(@"user-data-dir=~/.config/google-chrome/");
+            options.AddArgument("--allow-file-access-from-files");
+            return options;
+        }
+        public static Boolean WaitForElement(By element,int timeoutSec){
+                WebDriverWait w = new WebDriverWait(Browser.GetChrome(), TimeSpan.FromSeconds(timeoutSec));
+                var success = w.Until(condition =>
+                {
+                    try
+                    {
+                        Browser.GetChrome().FindElement(element);
+                        return true;
+                    }
+                    catch (StaleElementReferenceException)
+                    {
+                        return false;
+                    }
+                    catch (NoSuchElementException)
+                    {
+                        return false;
+                    }
+                });
+                System.Threading.Thread.Sleep(3000);
+                System.Console.WriteLine("Wait condition finished");
+            return success;
+        }
+
+        public static Boolean WaitForUrl(String url,int timeoutSec){
+                WebDriverWait w = new WebDriverWait(Browser.GetChrome(), TimeSpan.FromSeconds(timeoutSec));
                 var success = w.Until(condition =>
                 {
                     try
@@ -78,25 +135,6 @@ namespace test1
                 System.Console.WriteLine("Wait condition finished");
             return success;
         } 
-    }
-    public class Browser{
-        private static ChromeDriver chromeDriver;
-        private ChromeDriver driver;
-
-        public Browser(){
-           this.driver = new ChromeDriver(".",this.CreateChromeOptions()); 
-        }
-
-        public static ChromeDriver GetChrome(){
-            return chromeDriver?? (chromeDriver = new Browser().driver);
-        }
-        private ChromeOptions CreateChromeOptions(){
-            var options = new ChromeOptions();
-            options.AddArgument(@"user-data-dir=~/.config/google-chrome/");
-            options.AddArgument("--allow-file-access-from-files");
-            return options;
-        }
-
         ~Browser(){
             this.driver.Quit();
         }
@@ -109,9 +147,9 @@ namespace test1
         {
             var takeout = new GoogleTakeout();
             takeout.DownloadGeoHistory();
-            TestSecond("https://takeout.google.com/takeout/downloads");
+            //TestSecond("https://takeout.google.com/takeout/downloads");
 
-            TestGetStarted();
+            //TestGetStarted();
              
             Console.WriteLine("Google Timelines -> Calendar Loader");
             GeoFencingService.Test();
@@ -139,7 +177,7 @@ namespace test1
 
 
 
-        public static void TestSecond(string url="file:///home/tony/code/test1/websample/step4final/Hantera%20exporter.html") {
+       /* public static void TestSecond(string url="file:///home/tony/code/test1/websample/step4final/Hantera%20exporter.html") {
 
             var options = new ChromeOptions();
             //options.AddArgument(@"user-data-dir=~/.config/google-chrome/");
@@ -163,16 +201,9 @@ namespace test1
                 }
             }
             
-        }
+        }*/
 
-    public static int Until<T>(T t1, Func<T,int,int> fun){
-        var kalle=fun(t1,6);
-        return kalle;
-    }
 
-public static void olle(){
-    Until<int>(1,(a,b) =>  a+1);
-} 
         public void testJson(){
             string jsonstr = System.IO.File.ReadAllText("testdata.json");  
             var user = JsonSerializer.Deserialize<TestJson>(jsonstr);

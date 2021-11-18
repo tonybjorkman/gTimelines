@@ -92,8 +92,11 @@ namespace test1
             return options;
         }
         public static Boolean WaitForElement(By element,int timeoutSec){
+                
+                bool success = false;
                 WebDriverWait w = new WebDriverWait(Browser.GetChrome(), TimeSpan.FromSeconds(timeoutSec));
-                var success = w.Until(condition =>
+                try {
+                success = w.Until(condition =>
                 {
                     try
                     {
@@ -109,6 +112,9 @@ namespace test1
                         return false;
                     }
                 });
+                } catch (WebDriverTimeoutException e){
+                    success=false;
+                 }
                 System.Threading.Thread.Sleep(3000);
                 System.Console.WriteLine("Wait condition finished");
             return success;
@@ -116,7 +122,10 @@ namespace test1
 
         public static Boolean WaitForUrl(String url,int timeoutSec){
                 WebDriverWait w = new WebDriverWait(Browser.GetChrome(), TimeSpan.FromSeconds(timeoutSec));
-                var success = w.Until(condition =>
+                bool success = false;
+                try {
+
+                success = w.Until(condition =>
                 {
                     try
                     {
@@ -131,6 +140,9 @@ namespace test1
                         return false;
                     }
                 });
+                } catch (WebDriverTimeoutException e ){
+                    success=false;    
+                }
                 System.Threading.Thread.Sleep(3000);
                 System.Console.WriteLine("Wait condition finished");
             return success;

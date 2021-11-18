@@ -12,11 +12,27 @@ namespace tests
             var b = Browser.GetChrome();
             b.Navigate().GoToUrl("file:///home/tony/code/test1/websample/delayElement/delayElement.html");
             var result = Browser.WaitForElement(By.XPath("//div[contains(text(),'Finished')]"),20);
-            //System.Threading.Thread.Sleep(10000);
 
-            //var result2 = Browser.WaitForElement(By.XPath("//div[contains(text),'Foobar')]"),5);
             Assert.True(result);
-            //Assert.False(result2);
+              
+            result = Browser.WaitForElement(By.XPath("//div[contains(text(),'Foo-bar')]"),3);
+            Assert.False(result);
+            b.Quit();
+        }
+
+        [Fact]
+        public void TestUrlRedir(){
+            var b = Browser.GetChrome();
+            b.Navigate().GoToUrl("file:///home/tony/code/test1/websample/delayElement/delayRedir.html");
+            var result = Browser.WaitForUrl("file:///home/tony/code/test1/websample/delayElement/redirPage.html",20);
+            Assert.True(b.Url=="file:///home/tony/code/test1/websample/delayElement/redirPage.html");
+            Assert.True(result);
+            
+            b.Navigate().GoToUrl("file:///home/tony/code/test1/websample/delayElement/delayElement.html");
+            result = Browser.WaitForUrl("file:///home/tony/code/test1/websample/delayElement/redirPage.html",4);
+            Assert.False(result);
+            b.Quit();
+            
         }
     }
 }
